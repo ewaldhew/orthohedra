@@ -1,6 +1,8 @@
 #ifndef ORTHOHEDRA_H
 #define ORTHOHEDRA_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -9,6 +11,26 @@ extern "C"
 typedef struct {
     void *repr;
 } OPP;
+
+/**
+ * Initializes the space in which all polyhedra shall lie in.
+ *
+ * Input::
+ *   dim
+ *     The number of dimensions of the space.
+ *
+ *   minCoords
+ *     The minimum coordinates for each dimension.
+ *
+ *   maxCoords
+ *     The maximum coordinates for each dimension.
+ *     Must be in the same order as minCoords.
+ *
+ * Return::
+ *   An error code - 0 if operation was successful, non-zero otherwise.
+ */
+int OH_Initialize(size_t dim, int* limitCoords);
+
 
 /* Initializes an orthogonal pseudo-polyhedron */
 OPP* OH_New();
