@@ -1,10 +1,10 @@
 CC = g++
-CFLAGS = -std=c++11 -Wall -pedantic -g
+CFLAGS = -std=c++11 -Wall -pedantic -g -fPIC
 
 OBJS = bin/main.o bin/test.o bin/space.o bin/repr.o bin/grid_repr.o bin/vertex_repr.o bin/nbhood_repr.o
 
 all: orthopoly
-	
+
 orthopoly: bin ${OBJS}
 	${CC} ${CFLAGS} ${OBJS} -o orthopoly
 
@@ -39,7 +39,10 @@ bin/nbhood_repr.o: src/nbhood_repr.cpp src/nbhood_repr.h src/vertex_repr.h \
 	${CC} ${CFLAGS} src/nbhood_repr.cpp -c -o bin/nbhood_repr.o
 
 clean:
-	rm -rf bin orthopoly liborthopoly.a html latex
+	rm -rf bin orthopoly html latex
 
 staticlib: orthopoly
-	ar rcs liborthopoly.a ${OBJS}
+	ar rcs bin/liborthopoly.a ${OBJS}
+
+dynamiclib: staticlib
+	${CC} ${CFLAGS} -shared src/orthohedra.cpp -L. -Iinclude -l:bin/liborthopoly.a -o bin/liborthohedra.so
