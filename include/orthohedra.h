@@ -33,16 +33,16 @@ int OH_Initialize(size_t dim, int* limitCoords);
 
 
 /* Initializes an orthogonal pseudo-polyhedron */
-OPP* OH_New();
+OPP OH_New();
 
-void OH_Destroy(OPP* o);
+void OH_Destroy(OPP o);
 
-OPP* OH_Complement(OPP* o);
-OPP* OH_Intersection(OPP* o1, OPP* o2);
-OPP* OH_Union(OPP* o1, OPP* o2);
-OPP* OH_Difference(OPP* o1, OPP* o2);
+OPP OH_Complement(OPP o);
+OPP OH_Intersection(OPP o1, OPP o2);
+OPP OH_Union(OPP o1, OPP o2);
+OPP OH_Difference(OPP o1, OPP o2);
 
-int OH_Output_Repr(OPP* o, char** buffer, int* size);
+int OH_Output_Repr(OPP o, char** buffer, int* size);
 
 #ifdef __cplusplus
 }
