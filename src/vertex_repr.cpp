@@ -410,7 +410,7 @@ void VertexRepr::outputTikz(std::set<std::pair<std::vector<Coord>, char> > *addi
 {
     Space::Iterator it = space.createIterator(true);
     GridRepr gr(space);
-    if (*tikzOstream == std::cerr) {
+    if ((*tikzOstream).rdbuf() == std::cerr.rdbuf()) {
         gr.setTikzOstreamToCerr();
     }
     while (!it.atEnd()) {
