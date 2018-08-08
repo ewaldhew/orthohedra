@@ -395,6 +395,14 @@ VertexRepr :: operator GridRepr()
     return gr;
 }
 
+void VertexRepr::addPnt(const std::vector<Coord> & pnt)
+{
+    assert(pnt.size() == dim());
+    assert(space.checkLimitsAllowLimits(pnt));
+
+    vertexesWithColor.insert(pair<vector<Coord>,bool>(pnt, true));
+}
+
 std::ostream & operator<<(std::ostream & os, const VertexRepr & vr)
 {
     for (std::set<std::pair<std::vector<Coord>, bool> >::iterator it = vr.vertexesWithColor.begin();

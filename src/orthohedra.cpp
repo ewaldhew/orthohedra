@@ -64,6 +64,16 @@ void OH_Destroy(OPP o)
 }
 
 extern "C"
+void OH_Add_Point(OPP o, int* coords)
+{
+    if (!o)
+        return;
+
+    std::vector<Coord> pnt(coords, coords + CONTEXT.k_dim);
+    getRepr(o)->addPnt(pnt);
+}
+
+extern "C"
 OPP OH_Complement(OPP o)
 {
     if (!o)

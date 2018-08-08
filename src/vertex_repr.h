@@ -130,6 +130,8 @@ public:
     ~VertexRepr();
     operator GridRepr(); /* konverze na GridRepr */
 
+    void addPnt(const std::vector<Coord> & pnt);
+
     /**
      * Outputs polyhedron as a list of vertices with their colors.
      * Every vertex is output as array of its coordinates.

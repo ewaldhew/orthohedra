@@ -42,6 +42,8 @@ OPP OH_New();
 
 void OH_Destroy(OPP o);
 
+void OH_Add_Point(OPP o, int* coords);
+
 OPP OH_Complement(OPP o);
 OPP OH_Intersection(OPP o1, OPP o2);
 OPP OH_Union(OPP o1, OPP o2);
