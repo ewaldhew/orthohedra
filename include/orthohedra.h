@@ -3,14 +3,19 @@
 
 #include <stddef.h>
 
+typedef struct OPPRepr
+#ifdef __cplusplus
+{
+    void *repr;
+}
+#endif
+    *OPP;
+
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-typedef struct {
-    void *repr;
-} OPP;
 
 /**
  * Initializes the space in which all polyhedra shall lie in.
