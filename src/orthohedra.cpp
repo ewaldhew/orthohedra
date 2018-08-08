@@ -8,6 +8,7 @@
 
 
 using OH_Context = struct {
+    bool initialized = false;
     size_t k_dim;
     Space space;
     std::vector<Coord> origin;
@@ -38,6 +39,7 @@ int OH_Initialize(size_t dim, int* limitCoords)
 
     CONTEXT.space = Space(coords);
     CONTEXT.k_dim = dim;
+    CONTEXT.initialized = true;
 
     return 0;
 }
@@ -45,12 +47,18 @@ int OH_Initialize(size_t dim, int* limitCoords)
 extern "C"
 OPP OH_New()
 {
-    return new OPPRepr{new INTERNAL_REPR(CONTEXT.space)};
+    if (!CONTEXT.initialized)
+        return NULL;
+    else
+        return new OPPRepr{new INTERNAL_REPR(CONTEXT.space)};
 }
 
 extern "C"
 void OH_Destroy(OPP o)
 {
+    if (!o)
+        return;
+
     delete getRepr(o);
     delete o;
 }
@@ -58,6 +66,9 @@ void OH_Destroy(OPP o)
 extern "C"
 OPP OH_Complement(OPP o)
 {
+    if (!o)
+        return NULL;
+
     OPP result = OH_New();
     *getRepr(result) = getRepr(o)->complement();
     return result;
@@ -65,6 +76,9 @@ OPP OH_Complement(OPP o)
 extern "C"
 OPP OH_Intersection(OPP o1, OPP o2)
 {
+    if (!o1 || !o2)
+        return NULL;
+
     OPP result = OH_New();
     *getRepr(result) = getRepr(o1)->intersection(*getRepr(o2));
     return result;
@@ -72,6 +86,9 @@ OPP OH_Intersection(OPP o1, OPP o2)
 extern "C"
 OPP OH_Union(OPP o1, OPP o2)
 {
+    if (!o1 || !o2)
+        return NULL;
+
     OPP result = OH_New();
     *getRepr(result) = getRepr(o1)->unification(*getRepr(o2));
     return result;
@@ -79,6 +96,9 @@ OPP OH_Union(OPP o1, OPP o2)
 extern "C"
 OPP OH_Difference(OPP o1, OPP o2)
 {
+    if (!o1 || !o2)
+        return NULL;
+
     OPP result = OH_New();
     *getRepr(result) = getRepr(o1)->difference(*getRepr(o2));
     return result;
