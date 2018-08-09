@@ -7,6 +7,21 @@
 #define INTERNAL_REPR VertexRepr
 
 
+static int HandleExceptions() noexcept
+{
+    try { throw; }
+
+    catch (const std::bad_alloc &)
+    {
+        return ENOMEM;
+    }
+    catch (...)
+    {
+        return ERR_UNHANDLED_EXCEPTION;
+    }
+}
+
+
 using OH_Context = struct {
     bool initialized = false;
     size_t k_dim;
@@ -17,7 +32,7 @@ using OH_Context = struct {
 static OH_Context CONTEXT;
 
 
-static inline INTERNAL_REPR *getRepr(const OPP & opp)
+static inline INTERNAL_REPR *getRepr(const OPP & opp) noexcept
 {
     return static_cast<INTERNAL_REPR*>(opp->repr);
 }
@@ -26,20 +41,24 @@ static inline INTERNAL_REPR *getRepr(const OPP & opp)
 extern "C"
 int OH_Initialize(size_t dim, int* limitCoords)
 {
-    std::vector<Coord> coords(dim);
-    CONTEXT.origin = std::vector<Coord>(dim);
+    try {
+        std::vector<Coord> coords(dim);
+        CONTEXT.origin = std::vector<Coord>(dim);
 
-    if (dim < 1)
-        return 1;
+        if (dim < 1)
+            return 1;
 
-    for (size_t i = 0; i < dim; i ++) {
-        CONTEXT.origin[i] = -limitCoords[2*i];
-        coords[i] = limitCoords[2*i + 1] - limitCoords[2*i];
+        for (size_t i = 0; i < dim; i ++) {
+            CONTEXT.origin[i] = -limitCoords[2*i];
+            coords[i] = limitCoords[2*i + 1] - limitCoords[2*i];
+        }
+
+        CONTEXT.space = Space(coords);
+        CONTEXT.k_dim = dim;
+        CONTEXT.initialized = true;
+    } catch (...) {
+        return HandleExceptions();
     }
-
-    CONTEXT.space = Space(coords);
-    CONTEXT.k_dim = dim;
-    CONTEXT.initialized = true;
 
     return 0;
 }
@@ -47,10 +66,16 @@ int OH_Initialize(size_t dim, int* limitCoords)
 extern "C"
 OPP OH_New()
 {
-    if (!CONTEXT.initialized)
-        return NULL;
-    else
-        return new OPPRepr{new INTERNAL_REPR(CONTEXT.space)};
+    OPP opp = NULL;
+    try {
+        if (CONTEXT.initialized)
+            opp = new OPPRepr{new INTERNAL_REPR(CONTEXT.space)};
+    } catch (...) {
+        fprintf(stderr, "OH_New: failed with code %d", HandleExceptions());
+        opp = NULL;
+    }
+
+    return opp;
 }
 
 extern "C"
@@ -64,54 +89,80 @@ void OH_Destroy(OPP o)
 }
 
 extern "C"
-void OH_Add_Point(OPP o, int* coords)
+int OH_Add_Point(OPP o, int* coords)
 {
     if (!o)
-        return;
+        return EINVAL;
 
-    std::vector<Coord> pnt(coords, coords + CONTEXT.k_dim);
-    getRepr(o)->addPnt(pnt);
+    try {
+        std::vector<Coord> pnt(coords, coords + CONTEXT.k_dim);
+        getRepr(o)->addPnt(pnt);
+    } catch (...) {
+        return HandleExceptions();
+    }
+
+    return 0;
 }
 
 extern "C"
-OPP OH_Complement(OPP o)
+int OH_Complement(OPP o, OPP o1)
 {
-    if (!o)
-        return NULL;
+    if (!o || !o1)
+        return EINVAL;
 
-    OPP result = OH_New();
-    *getRepr(result) = getRepr(o)->complement();
-    return result;
+    try {
+        INTERNAL_REPR result = getRepr(o1)->complement();
+        *getRepr(o) = result;
+    } catch (...) {
+        return HandleExceptions();
+    }
+
+    return 0;
 }
 extern "C"
-OPP OH_Intersection(OPP o1, OPP o2)
+int OH_Intersection(OPP o, OPP o1, OPP o2)
 {
-    if (!o1 || !o2)
-        return NULL;
+    if (!o || !o1 || !o2)
+        return EINVAL;
 
-    OPP result = OH_New();
-    *getRepr(result) = getRepr(o1)->intersection(*getRepr(o2));
-    return result;
+    try {
+        INTERNAL_REPR result = getRepr(o1)->intersection(*getRepr(o2));
+        *getRepr(o) = result;
+    } catch (...) {
+        return HandleExceptions();
+    }
+
+    return 0;
 }
 extern "C"
-OPP OH_Union(OPP o1, OPP o2)
+int OH_Union(OPP o, OPP o1, OPP o2)
 {
-    if (!o1 || !o2)
-        return NULL;
+    if (!o || !o1 || !o2)
+        return EINVAL;
 
-    OPP result = OH_New();
-    *getRepr(result) = getRepr(o1)->unification(*getRepr(o2));
-    return result;
+    try {
+        INTERNAL_REPR result = getRepr(o1)->unification(*getRepr(o2));
+        *getRepr(o) = result;
+    } catch (...) {
+        return HandleExceptions();
+    }
+
+    return 0;
 }
 extern "C"
-OPP OH_Difference(OPP o1, OPP o2)
+int OH_Difference(OPP o, OPP o1, OPP o2)
 {
-    if (!o1 || !o2)
-        return NULL;
+    if (!o || !o1 || !o2)
+        return EINVAL;
 
-    OPP result = OH_New();
-    *getRepr(result) = getRepr(o1)->difference(*getRepr(o2));
-    return result;
+    try {
+        INTERNAL_REPR result = getRepr(o1)->difference(*getRepr(o2));
+        *getRepr(o) = result;
+    } catch (...) {
+        return HandleExceptions();
+    }
+
+    return 0;
 }
 
 

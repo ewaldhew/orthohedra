@@ -2,6 +2,9 @@
 #define ORTHOHEDRA_H
 
 #include <stddef.h>
+#include <errno.h>
+
+#define ERR_UNHANDLED_EXCEPTION -1
 
 typedef struct OPPRepr
 #ifdef __cplusplus
@@ -42,12 +45,12 @@ OPP OH_New();
 
 void OH_Destroy(OPP o);
 
-void OH_Add_Point(OPP o, int* coords);
+int OH_Add_Point(OPP o, int* coords);
 
-OPP OH_Complement(OPP o);
-OPP OH_Intersection(OPP o1, OPP o2);
-OPP OH_Union(OPP o1, OPP o2);
-OPP OH_Difference(OPP o1, OPP o2);
+int OH_Complement(OPP o, OPP o1);
+int OH_Intersection(OPP o, OPP o1, OPP o2);
+int OH_Union(OPP o, OPP o1, OPP o2);
+int OH_Difference(OPP o, OPP o1, OPP o2);
 
 int OH_Output_Repr(OPP o, char** buffer, int* size);
 
