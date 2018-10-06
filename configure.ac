@@ -1,0 +1,7 @@
+AC_INIT([orthohedra], [1.0])
+AM_INIT_AUTOMAKE([-Wall -Werror])
+AC_PROG_CPP
+AC_PROG_CXX
+AC_PROG_RANLIB
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
