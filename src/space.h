@@ -8,7 +8,7 @@
 #include <cmath>
 #include <limits>
 
-#define INTEGER_VERSION 0
+#define INTEGER_VERSION 1
 
 #define PRINT_POINT(PNT) { \
             for (size_t _iii_ = 0; _iii_ < (PNT).size(); _iii_ ++) { \
@@ -85,7 +85,8 @@ struct Coord {
     static const int ZERO_COORD;
     static const int UNDER_ZERO_COORD;
     int co;
-    
+
+    Coord() : Coord(0) {}
     Coord(int co) : co(co) {}
     Coord & operator=(const Coord & other)
     {
@@ -147,6 +148,7 @@ struct Coord {
     static const float UNDER_ZERO_COORD;
     float co;
     
+    Coord() : Coord(0) {}
     Coord(float co) : co(co) {}
     Coord & operator=(const Coord & other)
     {
@@ -297,6 +299,8 @@ private:
 
 public:
     std::vector<Coord> limits;
+
+    Space() = default;
     /**
      * Constructs Space using the count of dimensions.
      * @param dim Count of dimensions. In each dimension the default limit coordinate is to be set to Space::DEFAULT_LIMIT.

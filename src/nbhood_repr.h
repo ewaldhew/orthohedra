@@ -66,6 +66,8 @@ public:
     NbhoodRepr(const GridRepr & gr);
     operator GridRepr(); /* konverze na GridRepr */
 
+    void addPnt(const std::vector<Coord> & pnt) = delete; //TODO(ewaldhew): Implement this.
+
     /**
      * Outputs polyhedron as a list of vertices and their neighbourhood colors.
      */
