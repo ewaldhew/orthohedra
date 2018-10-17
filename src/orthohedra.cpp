@@ -4,7 +4,7 @@
 #include "grid_repr.h"
 #include "nbhood_repr.h"
 
-#define INTERNAL_REPR VertexRepr
+#define INTERNAL_REPR NbhoodRepr
 
 
 static int HandleExceptions() noexcept
@@ -78,6 +78,16 @@ OPP OH_New()
     return opp;
 }
 
+static inline constexpr
+OPP OH_New_Section(std::vector<Coord> const& lowPnt,
+                   std::vector<Coord> const& hiPnt)
+{
+    if (CONTEXT.initialized)
+        return new OPPRepr{new INTERNAL_REPR(CONTEXT.space, lowPnt, hiPnt)};
+    else
+        return NULL;
+}
+
 extern "C"
 void OH_Destroy(OPP o)
 {
@@ -89,14 +99,21 @@ void OH_Destroy(OPP o)
 }
 
 extern "C"
-int OH_Add_Point(OPP o, int* coords)
+int OH_Carve_Section(OPP in, int* low, int* high, OPP out)
 {
-    if (!o)
+    if (!in)
         return EINVAL;
 
     try {
-        std::vector<Coord> pnt(coords, coords + CONTEXT.k_dim);
-        getRepr(o)->addPnt(pnt);
+        int res;
+
+        out = OH_New_Section(std::vector<Coord>(low, low + CONTEXT.k_dim),
+                             std::vector<Coord>(high, high + CONTEXT.k_dim));
+
+        res = OH_Intersection(out, in, out);
+        if (res)
+            return res;
+        return OH_Difference(in, in, out);
     } catch (...) {
         return HandleExceptions();
     }
@@ -169,7 +186,15 @@ int OH_Difference(OPP o, OPP o1, OPP o2)
 extern "C"
 int OH_Output_Repr(OPP o, char** buffer, int* size)
 {
-    printf("testing\n");
+    if (!o)
+        return EINVAL;
+
+    try {
+        getRepr(o)->printVertexesCoords();
+    } catch (...) {
+        return HandleExceptions();
+    }
+
     return 0;
 }
 
