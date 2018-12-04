@@ -6,10 +6,19 @@
 
 #define ERR_UNHANDLED_EXCEPTION -1
 
+#ifdef __cplusplus
+#include "vertex_repr.h"
+#include "grid_repr.h"
+#include "nbhood_repr.h"
+
+#define INTERNAL_REPR NbhoodRepr
+#endif
+
+
 typedef struct OPPRepr
 #ifdef __cplusplus
 {
-    void *repr;
+    INTERNAL_REPR repr;
 }
 #endif
     *OPP;
@@ -37,7 +46,7 @@ extern "C"
  * Return::
  *   An error code - 0 if operation was successful, non-zero otherwise.
  */
-int OH_Initialize(size_t dim, int* limitCoords);
+int OH_Initialize(size_t dim, int* minCoords, int* maxCoords);
 
 
 /* Initializes an orthogonal pseudo-polyhedron */
@@ -45,14 +54,14 @@ OPP OH_New();
 
 void OH_Destroy(OPP o);
 
-int OH_Carve_Section(OPP in, int* low, int* high, OPP out);
+int OH_Carve_Section(OPP* in, int* low, int* high, OPP* out);
 
-int OH_Complement(OPP o, OPP o1);
-int OH_Intersection(OPP o, OPP o1, OPP o2);
-int OH_Union(OPP o, OPP o1, OPP o2);
-int OH_Difference(OPP o, OPP o1, OPP o2);
+int OH_Complement(OPP* o, OPP o1);
+int OH_Intersection(OPP* o, OPP o1, OPP o2);
+int OH_Union(OPP* o, OPP o1, OPP o2);
+int OH_Difference(OPP* o, OPP o1, OPP o2);
 
-int OH_Output_Repr(OPP o, char** buffer, int* size);
+int OH_Output_Repr(const OPP o, char** buffer, int* size);
 
 #ifdef __cplusplus
 }

@@ -1,11 +1,5 @@
 #include <orthohedra.h>
 
-#include "vertex_repr.h"
-#include "grid_repr.h"
-#include "nbhood_repr.h"
-
-#define INTERNAL_REPR NbhoodRepr
-
 
 static int HandleExceptions() noexcept
 {
@@ -26,35 +20,50 @@ using OH_Context = struct {
     bool initialized = false;
     size_t k_dim;
     Space space;
-    std::vector<Coord> origin;
+    std::vector<int> origin;
 };
 
 static OH_Context CONTEXT;
 
 
-static inline INTERNAL_REPR *getRepr(const OPP & opp) noexcept
+static inline INTERNAL_REPR & getRepr(const OPP & opp) noexcept
 {
-    return static_cast<INTERNAL_REPR*>(opp->repr);
+    return opp->repr;
+}
+static inline void setRepr(OPP* opp, INTERNAL_REPR const& repr)
+{
+    OH_Destroy(*opp);
+    *opp = new OPPRepr{repr};
+}
+
+static inline void map_coord(int* from, std::vector<Coord> & to) {
+    for (int i = 0; i < CONTEXT.k_dim; i++) {
+        to[i] = from[i] - CONTEXT.origin[i];
+    }
+}
+
+static inline void unmap_coord(std::vector<Coord> const& from, int* to)
+{
+    for (int i = 0; i < CONTEXT.k_dim; i++) {
+        to[i] = (int)from[i] + CONTEXT.origin[i];
+    }
 }
 
 
 extern "C"
-int OH_Initialize(size_t dim, int* limitCoords)
+int OH_Initialize(size_t dim, int* minCoords, int* maxCoords)
 {
+    if (dim < 1)
+        return 1;
+
     try {
-        std::vector<Coord> coords(dim);
-        CONTEXT.origin = std::vector<Coord>(dim);
-
-        if (dim < 1)
-            return 1;
-
-        for (size_t i = 0; i < dim; i ++) {
-            CONTEXT.origin[i] = -limitCoords[2*i];
-            coords[i] = limitCoords[2*i + 1] - limitCoords[2*i];
-        }
-
-        CONTEXT.space = Space(coords);
+        CONTEXT.origin = std::vector<int>(minCoords, minCoords + dim);
         CONTEXT.k_dim = dim;
+
+        std::vector<Coord> coords(dim);
+        map_coord(maxCoords, coords);
+        CONTEXT.space = Space(coords);
+
         CONTEXT.initialized = true;
     } catch (...) {
         return HandleExceptions();
@@ -69,7 +78,7 @@ OPP OH_New()
     OPP opp = NULL;
     try {
         if (CONTEXT.initialized)
-            opp = new OPPRepr{new INTERNAL_REPR(CONTEXT.space)};
+            opp = new OPPRepr{INTERNAL_REPR(CONTEXT.space)};
     } catch (...) {
         fprintf(stderr, "OH_New: failed with code %d", HandleExceptions());
         opp = NULL;
@@ -83,7 +92,7 @@ OPP OH_New_Section(std::vector<Coord> const& lowPnt,
                    std::vector<Coord> const& hiPnt)
 {
     if (CONTEXT.initialized)
-        return new OPPRepr{new INTERNAL_REPR(CONTEXT.space, lowPnt, hiPnt)};
+        return new OPPRepr{INTERNAL_REPR(CONTEXT.space, lowPnt, hiPnt)};
     else
         return NULL;
 }
@@ -91,15 +100,11 @@ OPP OH_New_Section(std::vector<Coord> const& lowPnt,
 extern "C"
 void OH_Destroy(OPP o)
 {
-    if (!o)
-        return;
-
-    delete getRepr(o);
     delete o;
 }
 
 extern "C"
-int OH_Carve_Section(OPP in, int* low, int* high, OPP out)
+int OH_Carve_Section(OPP* in, int* low, int* high, OPP* out)
 {
     if (!in)
         return EINVAL;
@@ -107,13 +112,18 @@ int OH_Carve_Section(OPP in, int* low, int* high, OPP out)
     try {
         int res;
 
-        out = OH_New_Section(std::vector<Coord>(low, low + CONTEXT.k_dim),
-                             std::vector<Coord>(high, high + CONTEXT.k_dim));
+        std::vector<Coord> coord_l(CONTEXT.k_dim);
+        std::vector<Coord> coord_h(CONTEXT.k_dim);
 
-        res = OH_Intersection(out, in, out);
+
+        map_coord(low, coord_l);
+        map_coord(high, coord_h);
+        *out = OH_New_Section(coord_l, coord_h);
+
+        res = OH_Intersection(out, *in, *out);
         if (res)
             return res;
-        return OH_Difference(in, in, out);
+        return OH_Difference(in, *in, *out);
     } catch (...) {
         return HandleExceptions();
     }
@@ -122,14 +132,13 @@ int OH_Carve_Section(OPP in, int* low, int* high, OPP out)
 }
 
 extern "C"
-int OH_Complement(OPP o, OPP o1)
+int OH_Complement(OPP* o, OPP o1)
 {
-    if (!o || !o1)
+    if (!o1)
         return EINVAL;
 
     try {
-        INTERNAL_REPR result = getRepr(o1)->complement();
-        *getRepr(o) = result;
+        setRepr(o, getRepr(o1).complement());
     } catch (...) {
         return HandleExceptions();
     }
@@ -137,14 +146,13 @@ int OH_Complement(OPP o, OPP o1)
     return 0;
 }
 extern "C"
-int OH_Intersection(OPP o, OPP o1, OPP o2)
+int OH_Intersection(OPP* o, OPP o1, OPP o2)
 {
-    if (!o || !o1 || !o2)
+    if (!o1 || !o2)
         return EINVAL;
 
     try {
-        INTERNAL_REPR result = getRepr(o1)->intersection(*getRepr(o2));
-        *getRepr(o) = result;
+        setRepr(o, getRepr(o1).intersection(getRepr(o2)));
     } catch (...) {
         return HandleExceptions();
     }
@@ -152,14 +160,13 @@ int OH_Intersection(OPP o, OPP o1, OPP o2)
     return 0;
 }
 extern "C"
-int OH_Union(OPP o, OPP o1, OPP o2)
+int OH_Union(OPP* o, OPP o1, OPP o2)
 {
-    if (!o || !o1 || !o2)
+    if (!o1 || !o2)
         return EINVAL;
 
     try {
-        INTERNAL_REPR result = getRepr(o1)->unification(*getRepr(o2));
-        *getRepr(o) = result;
+        setRepr(o, getRepr(o1).unification(getRepr(o2)));
     } catch (...) {
         return HandleExceptions();
     }
@@ -167,14 +174,13 @@ int OH_Union(OPP o, OPP o1, OPP o2)
     return 0;
 }
 extern "C"
-int OH_Difference(OPP o, OPP o1, OPP o2)
+int OH_Difference(OPP* o, OPP o1, OPP o2)
 {
-    if (!o || !o1 || !o2)
+    if (!o1 || !o2)
         return EINVAL;
 
     try {
-        INTERNAL_REPR result = getRepr(o1)->difference(*getRepr(o2));
-        *getRepr(o) = result;
+        setRepr(o, getRepr(o1).difference(getRepr(o2)));
     } catch (...) {
         return HandleExceptions();
     }
@@ -190,7 +196,7 @@ int OH_Output_Repr(OPP o, char** buffer, int* size)
         return EINVAL;
 
     try {
-        getRepr(o)->printVertexesCoords();
+        getRepr(o).printVertexesCoords();
     } catch (...) {
         return HandleExceptions();
     }

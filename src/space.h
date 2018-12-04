@@ -137,6 +137,10 @@ struct Coord {
     {
         return Coord(co + 1);
     }
+    explicit operator int() const
+    {
+        return co;
+    }
 };
 #else
 
