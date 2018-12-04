@@ -127,6 +127,7 @@ public:
 
     
     const std::vector<VertexWithNbhood> & getVertexesWithNbhood() const;
+    const std::vector<Coord> & getLowestPnt() const;
     void printVertexesCoords(); /* pro debugging */
     void readCoordsFromFile(const char * filepath); /* pro debugging */
 };

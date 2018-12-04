@@ -190,7 +190,23 @@ int OH_Difference(OPP* o, OPP o1, OPP o2)
 
 
 extern "C"
-int OH_Output_Repr(OPP o, char** buffer, int* size)
+int OH_Get_Point(const OPP o, int* pnt)
+{
+    if (!o)
+        return EINVAL;
+
+    try {
+        std::vector<Coord> vtx = getRepr(o).getLowestPnt();
+        unmap_coord(vtx, pnt);
+    } catch (...) {
+        return HandleExceptions();
+    }
+
+    return 0;
+}
+
+extern "C"
+int OH_Output_Repr(const OPP o, char** buffer, int* size)
 {
     if (!o)
         return EINVAL;

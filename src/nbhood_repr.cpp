@@ -722,6 +722,11 @@ const std::vector<VertexWithNbhood> & NbhoodRepr::getVertexesWithNbhood() const
     return vertexesWithNbhood;  
 }
 
+const std::vector<Coord> & NbhoodRepr::getLowestPnt() const
+{
+    return vertexesWithNbhood[0].vertex;
+}
+
 std::vector<NbhoodRepr> NbhoodRepr::calcBoundary()
 {
     if (space.dim() == 1) {

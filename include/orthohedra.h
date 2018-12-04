@@ -61,6 +61,7 @@ int OH_Intersection(OPP* o, OPP o1, OPP o2);
 int OH_Union(OPP* o, OPP o1, OPP o2);
 int OH_Difference(OPP* o, OPP o1, OPP o2);
 
+int OH_Get_Point(const OPP o, int* pnt);
 int OH_Output_Repr(const OPP o, char** buffer, int* size);
 
 #ifdef __cplusplus
