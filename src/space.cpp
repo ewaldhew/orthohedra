@@ -3,14 +3,14 @@
 using namespace std;
 
 #if INTEGER_VERSION
-const int Coord::ZERO_COORD = 0;
-const int Coord::UNDER_ZERO_COORD = -1;
+const long Coord::ZERO_COORD = 0;
+const long Coord::UNDER_ZERO_COORD = -1;
 #else
 const float Coord::UNDER_ZERO_COORD = - std::numeric_limits<float>::max();
 const float Coord::ZERO_COORD = nextafterf(UNDER_ZERO_COORD, std::numeric_limits<float>::max());
 #endif
 
-const int Space::DEFAULT_LIMIT = 100;
+const long Space::DEFAULT_LIMIT = 100;
 
 std::vector<size_t> boolVectorToSizetVector(const std::vector<bool> & pnt)
 {

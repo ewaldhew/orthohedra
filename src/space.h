@@ -82,18 +82,18 @@ public:
 
 #if INTEGER_VERSION
 struct Coord {
-    static const int ZERO_COORD;
-    static const int UNDER_ZERO_COORD;
-    int co;
+    static const long ZERO_COORD;
+    static const long UNDER_ZERO_COORD;
+    long co;
 
     Coord() : Coord(0) {}
-    Coord(int co) : co(co) {}
+    Coord(long co) : co(co) {}
     Coord & operator=(const Coord & other)
     {
         this->co = other.co;
         return *this;
     }
-    Coord & operator=(int n)
+    Coord & operator=(long n)
     {
         this->co = n;
         return *this;
@@ -137,7 +137,7 @@ struct Coord {
     {
         return Coord(co + 1);
     }
-    explicit operator int() const
+    explicit operator long() const
     {
         return co;
     }
@@ -298,7 +298,7 @@ public:
     };
 
 private:
-    static const int DEFAULT_LIMIT;
+    static const long DEFAULT_LIMIT;
     std::vector<Coord> zeroPnt;
 
 public:

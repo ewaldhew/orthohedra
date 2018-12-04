@@ -15,6 +15,8 @@
 #endif
 
 
+typedef long Fixed;
+
 typedef struct OPPRepr
 #ifdef __cplusplus
 {
@@ -46,7 +48,7 @@ extern "C"
  * Return::
  *   An error code - 0 if operation was successful, non-zero otherwise.
  */
-int OH_Initialize(size_t dim, int* minCoords, int* maxCoords);
+int OH_Initialize(size_t dim, Fixed* minCoords, Fixed* maxCoords);
 
 
 /* Initializes an orthogonal pseudo-polyhedron */
@@ -54,14 +56,14 @@ OPP OH_New();
 
 void OH_Destroy(OPP o);
 
-int OH_Carve_Section(OPP* in, int* low, int* high, OPP* out);
+int OH_Carve_Section(OPP* in, Fixed* low, Fixed* high, OPP* out);
 
 int OH_Complement(OPP* o, OPP o1);
 int OH_Intersection(OPP* o, OPP o1, OPP o2);
 int OH_Union(OPP* o, OPP o1, OPP o2);
 int OH_Difference(OPP* o, OPP o1, OPP o2);
 
-int OH_Get_Point(const OPP o, int* pnt);
+int OH_Get_Point(const OPP o, Fixed* pnt);
 int OH_Output_Repr(const OPP o, char** buffer, int* size);
 
 #ifdef __cplusplus

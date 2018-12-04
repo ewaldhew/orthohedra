@@ -20,7 +20,7 @@ using OH_Context = struct {
     bool initialized = false;
     size_t k_dim;
     Space space;
-    std::vector<int> origin;
+    std::vector<long> origin;
 };
 
 static OH_Context CONTEXT;
@@ -36,28 +36,28 @@ static inline void setRepr(OPP* opp, INTERNAL_REPR const& repr)
     *opp = new OPPRepr{repr};
 }
 
-static inline void map_coord(int* from, std::vector<Coord> & to) {
+static inline void map_coord(Fixed* from, std::vector<Coord> & to) {
     for (int i = 0; i < CONTEXT.k_dim; i++) {
         to[i] = from[i] - CONTEXT.origin[i];
     }
 }
 
-static inline void unmap_coord(std::vector<Coord> const& from, int* to)
+static inline void unmap_coord(std::vector<Coord> const& from, Fixed* to)
 {
     for (int i = 0; i < CONTEXT.k_dim; i++) {
-        to[i] = (int)from[i] + CONTEXT.origin[i];
+        to[i] = (long)from[i] + CONTEXT.origin[i];
     }
 }
 
 
 extern "C"
-int OH_Initialize(size_t dim, int* minCoords, int* maxCoords)
+int OH_Initialize(size_t dim, Fixed* minCoords, Fixed* maxCoords)
 {
     if (dim < 1)
         return 1;
 
     try {
-        CONTEXT.origin = std::vector<int>(minCoords, minCoords + dim);
+        CONTEXT.origin = std::vector<long>(minCoords, minCoords + dim);
         CONTEXT.k_dim = dim;
 
         std::vector<Coord> coords(dim);
@@ -87,7 +87,7 @@ OPP OH_New()
     return opp;
 }
 
-static inline constexpr
+static inline
 OPP OH_New_Section(std::vector<Coord> const& lowPnt,
                    std::vector<Coord> const& hiPnt)
 {
@@ -104,7 +104,7 @@ void OH_Destroy(OPP o)
 }
 
 extern "C"
-int OH_Carve_Section(OPP* in, int* low, int* high, OPP* out)
+int OH_Carve_Section(OPP* in, Fixed* low, Fixed* high, OPP* out)
 {
     if (!in)
         return EINVAL;
@@ -190,7 +190,7 @@ int OH_Difference(OPP* o, OPP o1, OPP o2)
 
 
 extern "C"
-int OH_Get_Point(const OPP o, int* pnt)
+int OH_Get_Point(const OPP o, Fixed* pnt)
 {
     if (!o)
         return EINVAL;
