@@ -3,6 +3,7 @@
 *.o
 *.lo
 *.a
+*.la
 *.pc
 /.deps/
 /.libs/
