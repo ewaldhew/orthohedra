@@ -36,6 +36,12 @@ static inline void setRepr(OPP* opp, INTERNAL_REPR const& repr)
     *opp = new OPPRepr{repr};
 }
 
+static inline void offset_coord(std::vector<Coord> & coords) {
+    for (auto & coord : coords) {
+        coord = coord.getGridNext();
+    }
+}
+
 static inline void map_coord(Fixed* from, std::vector<Coord> & to) {
     for (int i = 0; i < CONTEXT.k_dim; i++) {
         to[i] = from[i] - CONTEXT.origin[i];
@@ -62,6 +68,7 @@ int OH_Initialize(size_t dim, Fixed* minCoords, Fixed* maxCoords)
 
         std::vector<Coord> coords(dim);
         map_coord(maxCoords, coords);
+        offset_coord(coords);
         CONTEXT.space = Space(coords);
 
         CONTEXT.initialized = true;
@@ -126,6 +133,7 @@ OPP OH_New_Section(Fixed* low, Fixed* high)
 
         map_coord(low, lowPnt);
         map_coord(high, hiPnt);
+        offset_coord(hiPnt);
 
         return OH_new_section_internal(lowPnt, hiPnt);
     } catch (...) {
@@ -229,6 +237,9 @@ int OH_Get_Point(const OPP o, Fixed* pnt)
         return EINVAL;
 
     try {
+        if (getRepr(o).getVertexesWithNbhood().size() == 0)
+            return -1;
+
         std::vector<Coord> vtx = getRepr(o).getLowestPnt();
         unmap_coord(vtx, pnt);
     } catch (...) {
