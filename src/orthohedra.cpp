@@ -72,30 +72,69 @@ int OH_Initialize(size_t dim, Fixed* minCoords, Fixed* maxCoords)
     return 0;
 }
 
-extern "C"
-OPP OH_New()
-{
-    OPP opp = NULL;
-    try {
-        if (CONTEXT.initialized)
-            opp = new OPPRepr{INTERNAL_REPR(CONTEXT.space)};
-    } catch (...) {
-        fprintf(stderr, "OH_New: failed with code %d", HandleExceptions());
-        opp = NULL;
-    }
-
-    return opp;
-}
 
 static inline
-OPP OH_New_Section(std::vector<Coord> const& lowPnt,
-                   std::vector<Coord> const& hiPnt)
+OPP OH_new_section_internal(std::vector<Coord> const& lowPnt,
+                            std::vector<Coord> const& hiPnt)
 {
     if (CONTEXT.initialized)
         return new OPPRepr{INTERNAL_REPR(CONTEXT.space, lowPnt, hiPnt)};
     else
         return NULL;
 }
+
+
+extern "C"
+OPP OH_New()
+{
+    OPP opp = NULL;
+    try {
+        if (CONTEXT.initialized)
+            opp = OH_new_section_internal(CONTEXT.space.getZeroPnt(),
+                                          CONTEXT.space.limits);
+    } catch (...) {
+        fprintf(stderr, "OH_New: failed with code %d",
+                HandleExceptions());
+        opp = NULL;
+    }
+
+    return opp;
+}
+
+extern "C"
+OPP OH_New_Empty()
+{
+    OPP opp = NULL;
+    try {
+        if (CONTEXT.initialized)
+            opp = new OPPRepr{INTERNAL_REPR(CONTEXT.space)};
+    } catch (...) {
+        fprintf(stderr, "OH_New_Empty: failed with code %d",
+                HandleExceptions());
+        opp = NULL;
+    }
+
+    return opp;
+}
+
+extern "C"
+OPP OH_New_Section(Fixed* low, Fixed* high)
+{
+    try {
+        std::vector<Coord> lowPnt(CONTEXT.k_dim);
+        std::vector<Coord> hiPnt(CONTEXT.k_dim);
+
+        map_coord(low, lowPnt);
+        map_coord(high, hiPnt);
+
+        return OH_new_section_internal(lowPnt, hiPnt);
+    } catch (...) {
+        fprintf(stderr, "OH_New_Section: failed with code %d",
+                HandleExceptions());
+        return NULL;
+    }
+}
+
 
 extern "C"
 void OH_Destroy(OPP o)
@@ -112,13 +151,7 @@ int OH_Carve_Section(OPP* in, Fixed* low, Fixed* high, OPP* out)
     try {
         int res;
 
-        std::vector<Coord> coord_l(CONTEXT.k_dim);
-        std::vector<Coord> coord_h(CONTEXT.k_dim);
-
-
-        map_coord(low, coord_l);
-        map_coord(high, coord_h);
-        *out = OH_New_Section(coord_l, coord_h);
+        *out = OH_New_Section(low, high);
 
         res = OH_Intersection(out, *in, *out);
         if (res)

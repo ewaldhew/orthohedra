@@ -53,6 +53,8 @@ int OH_Initialize(size_t dim, Fixed* minCoords, Fixed* maxCoords);
 
 /* Initializes an orthogonal pseudo-polyhedron */
 OPP OH_New();
+OPP OH_New_Empty();
+OPP OH_New_Section(Fixed* low, Fixed* high);
 
 void OH_Destroy(OPP o);
 
