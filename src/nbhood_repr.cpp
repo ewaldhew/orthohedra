@@ -105,13 +105,22 @@ NbhoodRepr(gr.space, vector<VertexWithNbhood>())
     }
 }
 
-NbhoodRepr::NbhoodRepr(const Space &space, const std::vector<Coord> & lowPnt, const std::vector<Coord> & highPnt)
+NbhoodRepr::NbhoodRepr(const Space &space, const std::vector<Coord> & lowPnt, const std::vector<Coord> & highPnt_)
 :
 NbhoodRepr(space, vector<VertexWithNbhood>())
 {
-    assert(space.checkLimitsAllowLimits(lowPnt) && space.checkLimitsAllowLimits(highPnt));
-    assert(lower(lowPnt, highPnt));
+    assert(space.checkLimitsAllowLimits(lowPnt) && space.checkLimitsAllowLimits(highPnt_));
     //
+
+    std::vector<Coord> highPnt;
+    if (!lower(lowPnt, highPnt_)) {
+        highPnt = std::vector<Coord>(lowPnt);
+        for (auto & coord : highPnt) {
+            coord = coord.getGridNext();
+        }
+    } else {
+        highPnt = highPnt_;
+    }
 
     set<VertexWithNbhood> newVtxsWithNbh;
 
